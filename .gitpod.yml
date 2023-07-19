@@ -1,0 +1,52 @@
+tasks:
+  - name: Init Formbricks
+    before: cp .env.example .env
+    init: bash .gitpod/init.bash
+    command: gp sync-done init && gp tasks list
+
+  - name: web
+    init: bash .gitpod/setup-web.bash
+    command: gp sync-await init && turbo --filter "@formbricks/web" go
+
+  - name: demo
+    before: cd apps/demo && cp .env.example .env 
+    command: gp sync-await init && turbo --filter "@formbricks/demo" go
+
+  - name: js
+    command: gp sync-await init && turbo --filter "@formbricks/js" go
+  
+  - name: api
+    command: gp sync-await init && turbo --filter "@formbricks/api" go
+
+  - name: errors
+    command: gp sync-await init && turbo --filter "@formbricks/errors" go
+
+image:
+  file: .gitpod.Dockerfile
+
+ports:
+  - port: 3000
+    visibility: public
+    onOpen: open-browser
+  - port: 3002
+    visibility: public
+    onOpen: open-preview
+  - port: 5432
+    visibility: public
+    onOpen: ignore
+
+github:
+  prebuilds:
+    master: true
+    pullRequests: true
+    addComment: true
+
+vscode:
+  extensions:
+    - "ban.spellright"
+    - "bradlc.vscode-tailwindcss"
+    - "DavidAnson.vscode-markdownlint"
+    - "dbaeumer.vscode-eslint"
+    - "esbenp.prettier-vscode"
+    - "Prisma.prisma"
+    - "yzhang.markdown-all-in-one"
