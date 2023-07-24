@@ -1,21 +1,34 @@
 tasks:
   - name: Init Formbricks
     before: cp .env.example .env
-    init: bash .gitpod/init.bash && gp sync-done init-install
+    init: |
+      bash .gitpod/init.bash && 
+      gp sync-done init-install
     command: gp sync-done init && gp tasks list
 
   - name: web
-    init: gp sync-await init-install && bash .gitpod/setup-web.bash
+    init: |
+      gp sync-await init-install && 
+      bash .gitpod/setup-web.bash
     command: gp sync-await init && turbo --filter "@formbricks/web" go
 
   - name: demo
-    before: cd apps/demo && cp .env.example .env 
-    command: gp sync-await init && turbo --filter "@formbricks/demo" go
+    init: |
+      gp sync-await init-install && 
+      bash .gitpod/setup-demo.bash
+    command: |
+      cd apps/demo && 
+      cp .env.example .env &&
+      gp sync-await init && 
+      turbo --filter "@formbricks/demo" go
 
   - name: js
     command: gp sync-await init && turbo --filter "@formbricks/js" go
   
   - name: api
+    init: |
+      gp sync-await init-install && 
+      bash .gitpod/setup-api.bash
     command: gp sync-await init && turbo --filter "@formbricks/api" go
 
   - name: errors

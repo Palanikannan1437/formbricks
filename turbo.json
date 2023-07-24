@@ -4,15 +4,41 @@
     "@formbricks/web#go": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["@formbricks/database#go", "@formbricks/js#build"]
+      "dependsOn": [
+        "@formbricks/database#go",
+        "@formbricks/js#build"
+      ]
+    },
+    "@formbricks/demo#go": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": [
+        "@formbricks/js#build"
+      ]
+    },
+    "@formbricks/api#go": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": [
+        "@formbricks/errors#build"
+      ]
     },
     "@formbricks/js#build": {
-      "outputs": ["dist/**"],
-      "dependsOn": ["^build"]
+      "outputs": [
+        "dist/**"
+      ],
+      "dependsOn": [
+        "^build"
+      ]
     },
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"],
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**"
+      ],
       "env": [
         "CRON_SECRET",
         "PRISMA_GENERATE_DATAPROXY",
@@ -85,7 +111,10 @@
       "outputs": []
     },
     "db:migrate:vercel": {
-      "env": ["MIGRATE_DATABASE_URL", "DATABASE_URL"],
+      "env": [
+        "MIGRATE_DATABASE_URL",
+        "DATABASE_URL"
+      ],
       "outputs": []
     },
     "db:push": {
@@ -108,7 +137,9 @@
       "outputs": []
     },
     "generate": {
-      "dependsOn": ["^generate"]
+      "dependsOn": [
+        "^generate"
+      ]
     },
     "lint": {
       "outputs": []
