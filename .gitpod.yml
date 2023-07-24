@@ -25,6 +25,9 @@ tasks:
   - name: js
     command: gp sync-await init && turbo --filter "@formbricks/js" go
   
+  - name: db
+    command: gp sync-await init && turbo --filter "@formbricks/database" go
+    
   - name: api
     init: |
       gp sync-await init-install && 
