@@ -10,7 +10,7 @@ tasks:
     init: |
       gp sync-await init-install && 
       bash .gitpod/setup-web.bash
-    command: gp sync-await init && turbo --filter "@formbricks/web" go
+    command: gp sync-await init && turbo --filter "@formbricks/web" dev
 
   - name: demo
     init: |
@@ -20,7 +20,7 @@ tasks:
       cd apps/demo && 
       cp .env.example .env &&
       gp sync-await init && 
-      turbo --filter "@formbricks/demo" go
+      turbo --filter "@formbricks/demo" dev
 
   - name: js
     command: gp sync-await init && turbo --filter "@formbricks/js" go
