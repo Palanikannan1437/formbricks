@@ -1,17 +1,17 @@
 "use client";
 
 import LoadingSpinner from "@/components/shared/LoadingSpinner";
+import { useEnvironment } from "@/lib/environments/environments";
 import { useProduct } from "@/lib/products/products";
 import { useSurvey } from "@/lib/surveys/surveys";
 import type { Survey } from "@formbricks/types/surveys";
 import { ErrorComponent } from "@formbricks/ui";
 import { useEffect, useState } from "react";
 import PreviewSurvey from "../../PreviewSurvey";
-import SettingsView from "./SettingsView";
-import QuestionsAudienceTabs from "./QuestionsAudienceTabs";
+import QuestionsAudienceTabs from "./QuestionsSettingsTabs";
 import QuestionsView from "./QuestionsView";
+import SettingsView from "./SettingsView";
 import SurveyMenuBar from "./SurveyMenuBar";
-import { useEnvironment } from "@/lib/environments/environments";
 
 interface SurveyEditorProps {
   environmentId: string;
@@ -22,18 +22,16 @@ export default function SurveyEditor({ environmentId, surveyId }: SurveyEditorPr
   const [activeView, setActiveView] = useState<"questions" | "settings">("questions");
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
   const [localSurvey, setLocalSurvey] = useState<Survey | null>();
-
-  const { survey, isLoadingSurvey, isErrorSurvey } = useSurvey(environmentId, surveyId);
+  const [invalidQuestions, setInvalidQuestions] = useState<String[] | null>(null);
+  const { survey, isLoadingSurvey, isErrorSurvey } = useSurvey(environmentId, surveyId, true);
   const { product, isLoadingProduct, isErrorProduct } = useProduct(environmentId);
   const { environment, isLoadingEnvironment, isErrorEnvironment } = useEnvironment(environmentId);
 
   useEffect(() => {
     if (survey) {
-      if (!localSurvey) {
-        setLocalSurvey(survey);
-      }
+      setLocalSurvey(survey);
 
-      if (!activeQuestionId && survey.questions.length > 0) {
+      if (survey.questions.length > 0) {
         setActiveQuestionId(survey.questions[0].id);
       }
     }
@@ -56,6 +54,7 @@ export default function SurveyEditor({ environmentId, surveyId }: SurveyEditorPr
         environmentId={environmentId}
         activeId={activeView}
         setActiveId={setActiveView}
+        setInvalidQuestions={setInvalidQuestions}
       />
       <div className="relative z-0 flex flex-1 overflow-hidden">
         <main className="relative z-0 flex-1 overflow-y-auto focus:outline-none">
@@ -67,6 +66,8 @@ export default function SurveyEditor({ environmentId, surveyId }: SurveyEditorPr
               activeQuestionId={activeQuestionId}
               setActiveQuestionId={setActiveQuestionId}
               environmentId={environmentId}
+              invalidQuestions={invalidQuestions}
+              setInvalidQuestions={setInvalidQuestions}
             />
           ) : (
             <SettingsView

@@ -24,25 +24,29 @@ import {
   changeEnvironmentByTeam,
 } from "@/lib/environments/changeEnvironments";
 import { useEnvironment } from "@/lib/environments/environments";
+import { formbricksLogout } from "@/lib/formbricks";
 import { useMemberships } from "@/lib/memberships";
 import { useTeam } from "@/lib/teams/teams";
 import { capitalizeFirstLetter, truncate } from "@/lib/utils";
+import formbricks from "@formbricks/js";
+import { cn } from "@formbricks/lib/cn";
+import { IS_FORMBRICKS_CLOUD } from "@formbricks/lib/constants";
 import {
   CustomersIcon,
   DashboardIcon,
   ErrorComponent,
   FilterIcon,
-  FormIcon,
-  ProfileAvatar,
+  FormIcon, Popover, PopoverContent, PopoverTrigger, ProfileAvatar,
   SettingsIcon,
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
+  TooltipTrigger
 } from "@formbricks/ui";
 import {
   AdjustmentsVerticalIcon,
   ArrowRightOnRectangleIcon,
+  ChatBubbleBottomCenterTextIcon,
   ChevronDownIcon,
   CodeBracketIcon,
   CreditCardIcon,
@@ -52,9 +56,9 @@ import {
   PlusIcon,
   UserCircleIcon,
   UsersIcon,
-  ChatBubbleBottomCenterTextIcon,
 } from "@heroicons/react/24/solid";
 import clsx from "clsx";
+import { MenuIcon } from "lucide-react";
 import type { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
@@ -62,9 +66,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import AddProductModal from "./AddProductModal";
-import { formbricksLogout } from "@/lib/formbricks";
-import formbricks from "@formbricks/js";
-import { IS_FORMBRICKS_CLOUD } from "@formbricks/lib/constants";
 
 interface EnvironmentsNavbarProps {
   environmentId: string;
@@ -85,6 +86,8 @@ export default function EnvironmentsNavbar({ environmentId, session }: Environme
   const [widgetSetupCompleted, setWidgetSetupCompleted] = useState(false);
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
+
+  const [mobileNavMenuOpen, setMobileNavMenuOpen] = useState(false);
 
   useEffect(() => {
     if (environment && environment.widgetSetupCompleted) {
@@ -166,7 +169,7 @@ export default function EnvironmentsNavbar({ environmentId, session }: Environme
           icon: CreditCardIcon,
           label: "Billing & Plan",
           href: `/environments/${environmentId}/settings/billing`,
-          hidden: IS_FORMBRICKS_CLOUD,
+          hidden: !IS_FORMBRICKS_CLOUD,
         },
       ],
     },
@@ -227,13 +230,14 @@ export default function EnvironmentsNavbar({ environmentId, session }: Environme
 
       <div className="w-full px-4 sm:px-6">
         <div className="flex h-14 justify-between">
-          <div className="flex  space-x-4 py-2">
+          <div className="flex space-x-4 py-2">
             <Link
               href={`/environments/${environmentId}/surveys/`}
               className=" flex items-center justify-center rounded-md bg-gradient-to-b text-white transition-all ease-in-out hover:scale-105">
               {/* <PlusIcon className="h-6 w-6" /> */}
               <Image src={FaveIcon} width={30} height={30} alt="faveicon" />
             </Link>
+
             {navigation.map((item) => {
               const IconComponent: React.ElementType = item.icon;
 
@@ -245,7 +249,7 @@ export default function EnvironmentsNavbar({ environmentId, session }: Environme
                     item.current
                       ? "bg-slate-100 text-slate-900"
                       : "text-slate-900 hover:bg-slate-50 hover:text-slate-900",
-                    "inline-flex items-center rounded-md px-2 py-1 text-sm font-medium"
+                    "hidden items-center rounded-md px-2 py-1 text-sm font-medium sm:inline-flex"
                   )}
                   aria-current={item.current ? "page" : undefined}>
                   <IconComponent className="mr-3 h-5 w-5" />
@@ -254,6 +258,34 @@ export default function EnvironmentsNavbar({ environmentId, session }: Environme
               );
             })}
           </div>
+
+          <div className="flex items-center sm:hidden">
+            <Popover open={mobileNavMenuOpen} onOpenChange={setMobileNavMenuOpen}>
+              <PopoverTrigger onClick={() => setMobileNavMenuOpen(!mobileNavMenuOpen)}>
+                <span>
+                  <MenuIcon className="h-6 w-6 rounded-md bg-slate-200 p-1 text-slate-600" />
+                </span>
+              </PopoverTrigger>
+              <PopoverContent className="mr-4 bg-slate-100 shadow">
+                <div className="flex flex-col">
+                  {navigation.map((navItem) => (
+                    <Link key={navItem.name} href={navItem.href}>
+                      <div
+                        onClick={() => setMobileNavMenuOpen(false)}
+                        className={cn(
+                          "flex items-center space-x-2 rounded-md p-2",
+                          navItem.current && "bg-slate-200"
+                        )}>
+                        <navItem.icon className="h-5 w-5" />
+                        <span className="font-medium text-slate-600">{navItem.name}</span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

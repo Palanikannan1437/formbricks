@@ -101,7 +101,7 @@ const getNotificationResponse = (environment: EnvironmentData, productName: stri
     insights.totalCompletedResponses += survey.responses.filter((r) => r.finished).length;
     insights.totalDisplays += survey.displays.length;
     insights.totalResponses += survey.responses.length;
-    insights.completionRate = Math.round((insights.totalCompletedResponses / insights.totalDisplays) * 100);
+    insights.completionRate = Math.round((insights.totalCompletedResponses / insights.totalResponses) * 100);
   }
   // build the notification response needed for the emails
   const lastWeekDate = new Date();
@@ -117,6 +117,95 @@ const getNotificationResponse = (environment: EnvironmentData, productName: stri
 };
 
 const getProducts = async (): Promise<ProductData[]> => {
+  // gets all products together with team members, surveys, responses, and displays for the last 7 days
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+  return await prisma.product.findMany({
+    select: {
+      id: true,
+      name: true,
+      environments: {
+        where: {
+          type: "production",
+        },
+        select: {
+          id: true,
+          surveys: {
+            where: {
+              NOT: {
+                AND: [
+                  { status: "completed" },
+                  {
+                    responses: {
+                      none: {
+                        createdAt: {
+                          gte: sevenDaysAgo,
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+              status: {
+                not: "draft",
+              },
+            },
+            select: {
+              id: true,
+              name: true,
+              questions: true,
+              status: true,
+              responses: {
+                where: {
+                  createdAt: {
+                    gte: sevenDaysAgo,
+                  },
+                },
+                select: {
+                  id: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  finished: true,
+                  data: true,
+                },
+                orderBy: {
+                  createdAt: "desc",
+                },
+              },
+              displays: {
+                where: {
+                  createdAt: {
+                    gte: sevenDaysAgo,
+                  },
+                },
+                select: {
+                  status: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      team: {
+        select: {
+          memberships: {
+            select: {
+              user: {
+                select: {
+                  email: true,
+                  notificationSettings: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+};
+
+/* const getProducts = async (): Promise<ProductData[]> => {
   // gets all products together with team members, surveys, responses, and displays for the last 7 days
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -160,6 +249,11 @@ const getProducts = async (): Promise<ProductData[]> => {
                 },
               },
               displays: {
+                where: {
+                  createdAt: {
+                    gte: sevenDaysAgo,
+                  },
+                },
                 select: {
                   status: true,
                 },
@@ -185,3 +279,4 @@ const getProducts = async (): Promise<ProductData[]> => {
     },
   });
 };
+ */

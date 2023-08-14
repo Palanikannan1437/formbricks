@@ -1,14 +1,21 @@
+import "server-only";
+
 import { prisma } from "@formbricks/database";
 import { DatabaseError, ResourceNotFoundError } from "@formbricks/errors";
 import { TPerson } from "@formbricks/types/v1/people";
 import { Prisma } from "@prisma/client";
 import { cache } from "react";
 
-export const select = {
+export const selectPerson = {
   id: true,
   createdAt: true,
   updatedAt: true,
   attributes: {
+    where: {
+      attributeClass: {
+        archived: false,
+      },
+    },
     select: {
       value: true,
       attributeClass: {
@@ -33,13 +40,10 @@ type TransformPersonInput = {
 };
 
 export const transformPrismaPerson = (person: TransformPersonInput): TPerson => {
-  const attributes = person.attributes.reduce(
-    (acc, attr) => {
-      acc[attr.attributeClass.name] = attr.value;
-      return acc;
-    },
-    {} as Record<string, string | number>
-  );
+  const attributes = person.attributes.reduce((acc, attr) => {
+    acc[attr.attributeClass.name] = attr.value;
+    return acc;
+  }, {} as Record<string, string | number>);
 
   return {
     id: person.id,
@@ -55,7 +59,7 @@ export const getPerson = async (personId: string): Promise<TPerson | null> => {
       where: {
         id: personId,
       },
-      select,
+      select: selectPerson,
     });
 
     if (!personPrisma) {
@@ -80,7 +84,7 @@ export const getPeople = cache(async (environmentId: string): Promise<TPerson[]>
       where: {
         environmentId: environmentId,
       },
-      select,
+      select: selectPerson,
     });
     if (!personsPrisma) {
       throw new ResourceNotFoundError("Persons", "All Persons");
@@ -110,7 +114,7 @@ export const createPerson = async (environmentId: string): Promise<TPerson> => {
           },
         },
       },
-      select,
+      select: selectPerson,
     });
 
     const person = transformPrismaPerson(personPrisma);

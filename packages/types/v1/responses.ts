@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ZPersonAttributes } from "./people";
+import { ZSurvey } from "./surveys";
 import { ZTag } from "./tags";
 
 export const ZResponseData = z.record(z.union([z.string(), z.number(), z.array(z.string())]));
@@ -27,7 +28,18 @@ const ZResponseNote = z.object({
 
 export type TResponseNote = z.infer<typeof ZResponseNote>;
 
-const ZResponse = z.object({
+export const ZResponseMeta = z.object({
+  url: z.string(),
+  userAgent: z.object({
+    browser: z.string().optional(),
+    os: z.string().optional(),
+    device: z.string().optional(),
+  }),
+});
+
+export type TResponseMeta = z.infer<typeof ZResponseMeta>;
+
+export const ZResponse = z.object({
   id: z.string().cuid2(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -45,6 +57,7 @@ const ZResponse = z.object({
   data: ZResponseData,
   notes: z.array(ZResponseNote),
   tags: z.array(ZTag),
+  meta: ZResponseMeta.nullable(),
 });
 
 export type TResponse = z.infer<typeof ZResponse>;
@@ -56,6 +69,7 @@ export const ZResponseInput = z.object({
   data: ZResponseData,
   meta: z
     .object({
+      url: z.string().optional(),
       userAgent: z
         .object({
           browser: z.string().optional(),
@@ -75,3 +89,9 @@ export const ZResponseUpdateInput = z.object({
 });
 
 export type TResponseUpdateInput = z.infer<typeof ZResponseUpdateInput>;
+
+export const ZResponseWithSurvey = ZResponse.extend({
+  survey: ZSurvey,
+});
+
+export type TResponseWithSurvey = z.infer<typeof ZResponseWithSurvey>;

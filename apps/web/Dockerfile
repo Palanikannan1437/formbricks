@@ -10,7 +10,7 @@ COPY .env.docker /app/apps/web/.env
 RUN pnpm install
 
 # Build the project
-RUN pnpm prebuild --filter=web...
+RUN pnpm post-install --filter=web...
 RUN pnpm turbo run build --filter=web...
 
 FROM node:18-alpine AS runner
@@ -35,6 +35,8 @@ COPY --from=installer --chown=nextjs:nodejs /app/packages/database/schema.prisma
 COPY --from=installer --chown=nextjs:nodejs /app/packages/database/migrations ./packages/database/migrations
 
 ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
+
+EXPOSE 3000
 
 CMD if [ "$NEXTAUTH_SECRET" != "RANDOM_STRING" ]; then \
         pnpm dlx prisma migrate deploy && node apps/web/server.js; \

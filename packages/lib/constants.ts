@@ -8,6 +8,7 @@ const RAILWAY_STATIC_URL = process.env.RAILWAY_STATIC_URL ? `https://${process.e
 const HEROKU_URL = process.env.HEROKU_APP_NAME ? `https://${process.env.HEROKU_APP_NAME}.herokuapp.com` : "";
 const RENDER_URL = process.env.RENDER_EXTERNAL_URL ? `https://${process.env.RENDER_EXTERNAL_URL}` : "";
 export const WEBAPP_URL =
+  process.env.WEBAPP_URL ||
   process.env.NEXT_PUBLIC_WEBAPP_URL ||
   VERCEL_URL ||
   RAILWAY_STATIC_URL ||
@@ -16,5 +17,6 @@ export const WEBAPP_URL =
   "http://localhost:3000";
 
 // Other
-export const INTERNAL_SECRET = process.env.INTERNAL_SECRET;
+export const INTERNAL_SECRET = process.env.INTERNAL_SECRET || "";
 export const CRON_SECRET = process.env.CRON_SECRET;
+export const DEFAULT_BRAND_COLOR = "#64748b";

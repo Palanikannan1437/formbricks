@@ -9,10 +9,11 @@ import { deleteSurvey } from "@/lib/surveys/surveys";
 import type { Survey } from "@formbricks/types/surveys";
 import { Button, Input } from "@formbricks/ui";
 import { ArrowLeftIcon, Cog8ToothIcon, ExclamationTriangleIcon } from "@heroicons/react/24/solid";
+import { isEqual } from "lodash";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { isEqual } from "lodash";
+import { validateQuestion } from "./Validation";
 
 interface SurveyMenuBarProps {
   localSurvey: Survey;
@@ -21,6 +22,7 @@ interface SurveyMenuBarProps {
   environmentId: string;
   activeId: "questions" | "settings";
   setActiveId: (id: "questions" | "settings") => void;
+  setInvalidQuestions: (invalidQuestions: String[]) => void;
 }
 
 export default function SurveyMenuBar({
@@ -30,6 +32,7 @@ export default function SurveyMenuBar({
   setLocalSurvey,
   activeId,
   setActiveId,
+  setInvalidQuestions,
 }: SurveyMenuBarProps) {
   const router = useRouter();
   const { triggerSurveyMutate, isMutatingSurvey } = useSurveyMutation(environmentId, localSurvey.id);
@@ -37,6 +40,7 @@ export default function SurveyMenuBar({
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isConfirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const { product } = useProduct(environmentId);
+  let faultyQuestions: String[] = [];
 
   useEffect(() => {
     if (audiencePrompt && activeId === "settings") {
@@ -61,7 +65,8 @@ export default function SurveyMenuBar({
 
   // write a function which updates the local survey status
   const updateLocalSurveyStatus = (status: Survey["status"]) => {
-    const updatedSurvey = { ...localSurvey, status };
+    const updatedSurvey = JSON.parse(JSON.stringify(localSurvey));
+    updatedSurvey.status = status;
     setLocalSurvey(updatedSurvey);
   };
 
@@ -85,6 +90,37 @@ export default function SurveyMenuBar({
     }
   };
 
+  const validateSurvey = (survey) => {
+    faultyQuestions = [];
+    for (let index = 0; index < survey.questions.length; index++) {
+      const question = survey.questions[index];
+      const isValid = validateQuestion(question);
+
+      if (!isValid) {
+        faultyQuestions.push(question.id);
+      }
+    }
+    // if there are any faulty questions, the user won't be allowed to save the survey
+    if (faultyQuestions.length > 0) {
+      setInvalidQuestions(faultyQuestions);
+      toast.error("Please fill required fields");
+      return false;
+    }
+
+    /*
+     Check whether the count for autocomplete responses is not less 
+     than the current count of accepted response and also it is not set to 0
+    */
+    if (
+      (survey.autoComplete && survey._count?.responses && survey._count.responses >= survey.autoComplete) ||
+      survey?.autoComplete === 0
+    ) {
+      return false;
+    }
+
+    return true;
+  };
+
   const saveSurveyAction = (shouldNavigateBack = false) => {
     // variable named strippedSurvey that is a copy of localSurvey with isDraft removed from every question
     const strippedSurvey = {
@@ -94,6 +130,11 @@ export default function SurveyMenuBar({
         return rest;
       }),
     };
+
+    if (!validateSurvey(localSurvey)) {
+      return;
+    }
+
     triggerSurveyMutate({ ...strippedSurvey })
       .then(async (response) => {
         if (!response?.ok) {
@@ -128,7 +169,7 @@ export default function SurveyMenuBar({
           }}>
           Back
         </Button>
-        <p className="pl-4 font-semibold">{product.name} / </p>
+        <p className="pl-4 font-semibold hidden md:block">{product.name} / </p>
         <Input
           defaultValue={localSurvey.name}
           onChange={(e) => {
@@ -180,6 +221,9 @@ export default function SurveyMenuBar({
             variant="darkCTA"
             loading={isMutatingSurvey}
             onClick={async () => {
+              if (!validateSurvey(localSurvey)) {
+                return;
+              }
               await triggerSurveyMutate({ ...localSurvey, status: "inProgress" });
               router.push(`/environments/${environmentId}/surveys/${localSurvey.id}/summary?success=true`);
             }}>
