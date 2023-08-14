@@ -3,7 +3,6 @@ tasks:
     init: |
       cp .env.example .env &&
       bash .gitpod/init.bash && 
-      gp sync-await init && 
       turbo --filter "@formbricks/js" build && 
       gp sync-done init-install
     command: gp sync-done init && gp tasks list
