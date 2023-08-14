@@ -9,6 +9,9 @@
         "@formbricks/js#build"
       ]
     },
+    "@formbricks/database#db:down": {
+      "cache": false
+    },
     "@formbricks/database#go": {
       "cache": true
     },
@@ -127,6 +130,9 @@
       "outputs": []
     },
     "db:start": {
+      "cache": false
+    },
+    "db:down": {
       "cache": false
     },
     "dev": {

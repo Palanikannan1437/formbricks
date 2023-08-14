@@ -3,14 +3,28 @@ tasks:
     init: |
       cp .env.example .env &&
       bash .gitpod/init.bash && 
+      gp sync-await init && 
+      turbo --filter "@formbricks/js" build && 
       gp sync-done init-install
     command: gp sync-done init && gp tasks list
+
+  - name: db
+    init: |
+      gp sync-await init-install &&
+      turbo --filter "@formbricks/database" go &&
+      gp sync-done db-setup-init
+    command: |
+      gp sync-await init && turbo --filter "@formbricks/db" go && 
+      gp sync-done db-started
 
   - name: web
     init: |
       gp sync-await init-install && 
-      bash .gitpod/setup-web.bash
-    command: gp sync-await init && turbo --filter "@formbricks/web" dev
+      bash .gitpod/setup-web.bash &&
+      turbo --filter "@formbricks/database" db:down
+    command: |
+      gp sync-await init && 
+      turbo --filter "@formbricks/web" go
 
   - name: demo
     init: |
@@ -22,17 +36,18 @@ tasks:
       gp sync-await init && 
       turbo --filter "@formbricks/demo" dev
 
-  - name: js
-    command: gp sync-await init && turbo --filter "@formbricks/js" go
-    
   - name: api
     init: |
       gp sync-await init-install &&
       bash .gitpod/setup-api.bash
-    command: gp sync-await init && turbo --filter "@formbricks/api" go
+    command: |
+      gp sync-await init && 
+      turbo --filter "@formbricks/api" go
 
   - name: errors
-    command: gp sync-await init && turbo --filter "@formbricks/errors" go
+    command: |
+      gp sync-await init && 
+      turbo --filter "@formbricks/errors" go
 
 image:
   file: .gitpod.Dockerfile
