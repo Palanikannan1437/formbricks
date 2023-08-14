@@ -5,7 +5,10 @@ tasks:
       bash .gitpod/init.bash && 
       turbo --filter "@formbricks/js" build && 
       gp sync-done init-install
-    command: gp sync-done init && gp tasks list
+    command: |
+      gp sync-done init && 
+      gp tasks list &&
+      gp ports await 3002 && gp open apps/demo/.env
 
   - name: web
     init: |
