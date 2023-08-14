@@ -31,7 +31,7 @@ tasks:
       cd apps/demo && 
       cp .env.example .env &&
       gp sync-await init && 
-      turbo --filter "@formbricks/demo" dev
+      turbo --filter "@formbricks/demo" go
 
   - name: api
     init: |
