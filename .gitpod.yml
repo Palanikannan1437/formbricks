@@ -8,7 +8,7 @@ tasks:
     command: |
       gp sync-done init && 
       gp tasks list &&
-      gp ports await 3002 && gp open apps/demo/.env
+      gp ports await 3002 && gp ports await 3000 && gp open apps/demo/.env
 
   - name: web
     init: |
