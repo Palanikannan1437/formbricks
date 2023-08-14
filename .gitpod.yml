@@ -26,6 +26,7 @@ tasks:
     command: |
       cd apps/demo && 
       cp .env.example .env &&
+      sed -i -r "s#^(NEXT_PUBLIC_FORMBRICKS_API_HOST=).*#\1 $(gp url 3000)#" .env &&
       gp sync-await init && 
       turbo --filter "@formbricks/demo" go
 
