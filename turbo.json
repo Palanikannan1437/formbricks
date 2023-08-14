@@ -13,7 +13,7 @@
       "cache": false
     },
     "@formbricks/database#go": {
-      "cache": true
+      "cache": false
     },
     "@formbricks/demo#go": {
       "cache": false,

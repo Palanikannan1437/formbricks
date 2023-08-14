@@ -14,7 +14,8 @@ tasks:
       turbo --filter "@formbricks/database" go &&
       gp sync-done db-setup-init
     command: |
-      gp sync-await init && turbo --filter "@formbricks/db" go && 
+      gp sync-await init && 
+      turbo --filter "@formbricks/database" go &&
       gp sync-done db-started
 
   - name: web
@@ -24,6 +25,7 @@ tasks:
       turbo --filter "@formbricks/database" db:down
     command: |
       gp sync-await init && 
+      gp sync-await db-started &&
       turbo --filter "@formbricks/web" go
 
   - name: demo
