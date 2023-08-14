@@ -7,17 +7,10 @@ tasks:
       gp sync-done init-install
     command: gp sync-done init && gp tasks list
 
-  - name: db
-    init: |
-      gp sync-await init-install &&
-      turbo --filter "@formbricks/database" go &&
-      gp sync-done db-setup-init
-
   - name: web
     init: |
       gp sync-await init-install && 
       bash .gitpod/setup-web.bash &&
-      gp sync-await db-setup-init && 
       turbo --filter "@formbricks/database" db:down
     command: |
       gp sync-await init &&
