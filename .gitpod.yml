@@ -1,7 +1,7 @@
 tasks:
   - name: Init Formbricks
-    before: cp .env.example .env
     init: |
+      cp .env.example .env &&
       bash .gitpod/init.bash && 
       gp sync-done init-install
     command: gp sync-done init && gp tasks list
@@ -24,13 +24,10 @@ tasks:
 
   - name: js
     command: gp sync-await init && turbo --filter "@formbricks/js" go
-  
-  - name: db
-    command: gp sync-await init && turbo --filter "@formbricks/database" go
     
   - name: api
     init: |
-      gp sync-await init-install && 
+      gp sync-await init-install &&
       bash .gitpod/setup-api.bash
     command: gp sync-await init && turbo --filter "@formbricks/api" go
 

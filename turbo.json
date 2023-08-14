@@ -9,6 +9,9 @@
         "@formbricks/js#build"
       ]
     },
+    "@formbricks/database#go": {
+      "cache": true
+    },
     "@formbricks/demo#go": {
       "cache": false,
       "persistent": true,
